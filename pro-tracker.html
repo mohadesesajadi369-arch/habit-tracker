@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#f0f5ff" />
+<title>Habit Tracker | تقویم شمسی ۱۴۰۵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#f0f5ff;
+  --surface:#ffffff;
+  --surface-2:#f6f9ff;
+  --border:#dde3f0;
+  --text:#0b1220;
+  --text-sub:#4a5568;
+  --primary:#2563eb;
+  --primary-deep:#1d4ed8;
+  --primary-soft:#dbeafe;
+  --primary-faint:#eff6ff;
+  --radius:18px;
+  --shadow:0 1px 3px rgba(11,18,32,0.04),0 12px 32px rgba(11,18,32,0.06);
+  --shadow-sm:0 1px 2px rgba(11,18,32,0.06);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+
+.container{max-width:1280px;margin:0 auto;padding:1.5rem 1.2rem 5rem;}
+.hidden{display:none !important;}
+
+/* ===== AUTH ===== */
+.auth-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:linear-gradient(160deg,#eff6ff 0%,#f0f5ff 50%,#e0ecff 100%);
+}
+.auth-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2.5rem 2rem;
+  max-width:420px;width:100%;box-shadow:0 25px 60px rgba(11,18,32,0.08);animation:fadeUp .8s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.auth-card h1{font-weight:900;font-size:2rem;text-align:center;color:var(--primary-deep);letter-spacing:-2px;margin-bottom:0.25rem;}
+.auth-card .sub{color:var(--text-sub);font-size:0.92rem;text-align:center;margin-bottom:1.8rem;}
+.auth-card label{display:block;font-size:0.8rem;color:#334155;font-weight:700;margin-bottom:0.35rem;}
+.auth-card input{
+  width:100%;padding:0.75rem 1rem;border-radius:10px;border:1.5px solid var(--border);
+  background:#fff;color:var(--text);font-family:inherit;font-size:0.95rem;margin-bottom:1rem;transition:.2s;
+}
+.auth-card input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,0.12);}
+.auth-card .btn{width:100%;padding:0.85rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff;font-weight:800;font-size:1rem;cursor:pointer;transition:.2s;box-shadow:0 6px 18px rgba(37,99,235,0.22);margin-bottom:0.6rem;}
+.auth-card .btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(37,99,235,0.3);}
+.auth-card .btn-outline{width:100%;padding:0.85rem;border-radius:12px;border:1px solid var(--border);background:#fff;color:#475569;font-weight:700;font-size:0.9rem;cursor:pointer;transition:.2s;}
+.auth-card .btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.auth-card .remember{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;font-size:0.85rem;color:#334155;}
+.auth-card .msg{text-align:center;font-size:0.85rem;margin-top:0.8rem;font-weight:600;min-height:1.4rem;}
+.auth-card .msg.ok{color:#15803d;}
+.auth-card .msg.err{color:#b91c1c;}
+.auth-card .switch-text{text-align:center;margin-top:0.8rem;font-size:0.85rem;color:#475569;}
+.auth-card .switch-text a{color:var(--primary);font-weight:700;text-decoration:none;}
+.auth-card .switch-text a:hover{text-decoration:underline;}
+
+/* ===== APP HEADER ===== */
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.1rem 1.4rem;margin-bottom:1.5rem;box-shadow:var(--shadow);
+}
+.app-header .brand h1{font-weight:900;font-size:1.6rem;color:var(--primary-deep);letter-spacing:-2px;}
+.app-header .brand span{display:block;font-size:0.82rem;color:#64748b;margin-top:0.15rem;}
+.app-header .quote-box{
+  background:#fff;border:1px solid #dbe4ff;border-radius:12px;padding:0.7rem 1rem;font-size:0.85rem;color:#1d4ed8;font-weight:600;max-width:380px;display:flex;align-items:center;gap:0.6rem;box-shadow:0 2px 8px rgba(37,99,235,0.06);
+}
+.app-header .quote-box .emoji{font-size:1.3rem;}
+.nav-row{display:flex;align-items:center;gap:0.5rem;}
+.nav-row button{
+  background:#fff;border:1px solid var(--border);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--primary);font-size:0.9rem;transition:.2s;box-shadow:var(--shadow-sm);
+}
+.nav-row button:hover{background:var(--primary-faint);border-color:var(--primary);transform:scale(1.07);}
+.nav-row select{
+  background:#fff;border:1px solid var(--border);border-radius:10px;padding:0.35rem 0.7rem;font-family:inherit;font-size:0.85rem;color:var(--text);cursor:pointer;
+}
+#currentMonthLabel{font-weight:800;font-size:0.95rem;color:var(--primary-deep);min-width:120px;text-align:center;}
+.user-actions{display:flex;align-items:center;gap:0.7rem;}
+.save-btn{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff;border:none;padding:0.65rem 1.2rem;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(37,99,235,0.2);display:inline-flex;align-items:center;gap:0.4rem;
+}
+.save-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,0.3);}
+.logout-btn{background:#fff;color:#64748b;border:1px solid var(--border);padding:0.6rem 1rem;border-radius:10px;font-weight:700;font-size:0.8rem;cursor:pointer;transition:.2s;}
+.logout-btn:hover{border-color:#ef4444;color:#dc2626;}
+
+/* ===== STATS ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:0.9rem;transition:.2s;}
+.stat-card:hover{border-color:#c7d2fe;transform:translateY(-2px);}
+.stat-card .icon{width:44px;height:44px;border-radius:12px;background:var(--primary-faint);color:var(--primary);display:grid;place-items:center;font-size:1.15rem;}
+.stat-card h3{font-weight:900;font-size:1.35rem;color:var(--primary-deep);line-height:1;}
+.stat-card p{font-size:0.78rem;color:#475569;font-weight:500;}
+
+/* ===== REMINDER BANNER ===== */
+.reminder-banner{background:#fff;border:1px solid #c7d2fe;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;box-shadow:0 4px 15px rgba(37,99,235,0.06);animation:popIn .5s ease;}
+.reminder-banner.hidden{display:none;}
+.rem-banner-left{display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap;}
+.rem-banner-left h4{font-weight:800;color:#1d4ed8;font-size:0.95rem;}
+.rem-banner-left p{font-size:0.82rem;color:#475569;}
+.tags{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.tag{background:#eff6ff;color:#1d4ed8;padding:0.15rem 0.6rem;border-radius:8px;font-size:0.75rem;font-weight:700;border:1px solid #dbeafe;}
+.rem-banner-right .btn{background:#2563eb;color:#fff;border:none;padding:0.6rem 1rem;border-radius:8px;font-weight:700;font-size:0.8rem;cursor:pointer;box-shadow:0 3px 10px rgba(37,99,235,0.22);transition:.2s;}
+.rem-banner-right .btn:hover{background:#1d4ed8;transform:translateY(-1px);}
+@keyframes popIn{from{opacity:0;transform:scale(0.97) translateY(-6px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.card.alert-card{animation:pulse 3s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,99,235,0.12);}50%{box-shadow:0 0 0 12px rgba(37,99,235,0);}100%{box-shadow:0 0 0 0 rgba(37,99,235,0.12);}}
+
+/* ===== MAIN GRID ===== */
+.main-grid{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;margin-bottom:2rem;}
+@media(max-width:1024px){.main-grid{grid-template-columns:1fr;}}
+main{min-width:0;}
+aside{min-width:0;}
+
+/* ===== CALENDAR TABLE ===== */
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:0.8rem;}
+.calendar-table{width:100%;border-collapse:collapse;min-width:780px;}
+.calendar-table thead th{background:#f6f8ff;color:#475569;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.6px;padding:0.65rem 0.25rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;}
+.calendar-table thead th:first-child{text-align:right;padding-right:1.2rem;}
+.calendar-table thead th .sub-wd{display:block;font-size:0.7rem;color:#94a3b8;font-weight:600;margin-top:2px;}
+.calendar-table tbody tr{border-bottom:1px solid #f1f4fa;transition:.15s;}
+.calendar-table tbody tr:hover{background:#f8faff;}
+.calendar-table tbody td{padding:0.55rem 0.25rem;text-align:center;vertical-align:middle;}
+.habit-cell{text-align:right;padding-right:1.2rem !important;font-weight:800;color:#0b1220;display:flex;align-items:center;gap:0.7rem;}
+.color-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;background:var(--dot);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.05);}
+.delete-habit-btn{background:#fff;border:1px solid #e2e8f0;color:#94a3b8;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:0.8rem;font-weight:700;transition:.2s;margin-left:auto;}
+.delete-habit-btn:hover{border-color:#ef4444;color:#ef4444;}
+.calendar-table td input[type="checkbox"]{width:18px;height:18px;accent-color:#2563eb;cursor:pointer;border-radius:5px;border:1.5px solid #cbd5e1;appearance:none;display:grid;place-content:center;transition:.2s;}
+.calendar-table td input[type="checkbox"]:checked{background:#2563eb;border-color:#2563eb;}
+.calendar-table td input[type="checkbox"]:checked::after{content:"✓";color:#fff;font-size:0.75rem;font-weight:900;}
+.calendar-table td .chk-wrap{display:flex;flex-direction:column;align-items:center;}
+.calendar-table td .chk-wrap .d-num{font-size:0.75rem;color:#94a3b8;font-weight:500;}
+.calendar-table td.checked-cell{background:#eff6ff;}
+.calendar-table td.pct-cell{font-weight:900;color:#1d4ed8;font-size:0.85rem;}
+
+/* ===== TOOLBAR ===== */
+.toolbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;box-shadow:var(--shadow);margin-bottom:2rem;}
+.toolbar label{display:flex;flex-direction:column;gap:0.3rem;font-size:0.78rem;color:#475569;font-weight:700;}
+.toolbar input, .toolbar select{padding:0.65rem 0.9rem;border-radius:10px;border:1px solid var(--border);font-family:inherit;background:#fff;color:var(--text);font-size:0.9rem;min-width:180px;transition:.2s;}
+.toolbar input:focus, .toolbar select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+
+/* ===== PROGRESS CARDS ===== */
+.cards-heading{font-weight:900;font-size:1.1rem;margin-bottom:0.8rem;color:#1d4ed8;}
+.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:2.5rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--c,#2563eb);border-radius:var(--radius);padding:1.4rem 1.2rem;box-shadow:var(--shadow);transition:.25s;position:relative;}
+.card:hover{transform:translateY(-4px);border-color:#bfdbfe;}
+.card.alert-card{animation:pulse 3s infinite;}
+.card h3{font-weight:800;font-size:1.05rem;color:#0f172a;margin-bottom:0.2rem;}
+.card .meta{font-size:0.75rem;color:#64748b;margin-bottom:0.6rem;}
+.card .desc{font-size:0.85rem;color:#334155;margin-bottom:1rem;line-height:1.5;}
+.donut-wrap{position:relative;width:120px;height:120px;margin:0 auto 0.9rem;}
+.donut-wrap svg{transform:rotate(-90deg);width:100%;height:100%;}
+.donut-wrap circle.bg{fill:none;stroke:#e2e8f0;stroke-width:8;}
+.donut-wrap circle.fill{fill:none;stroke:var(--c);stroke-width:8;stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset 1.2s ease;}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;color:var(--c);font-size:1.35rem;letter-spacing:-0.5px;}
+.donut-center span{font-size:0.7rem;color:#64748b;font-weight:600;}
+.feedback-box{text-align:center;font-size:0.9rem;color:#334155;line-height:1.7;min-height:3rem;font-weight:600;}
+.feedback-box.positive{color:#15803d;}
+.feedback-box.neutral{color:#b45309;}
+.feedback-box.negative{color:#dc2626;}
+.motivation-icon{font-size:1.15rem;display:block;margin-bottom:0.2rem;}
+.rem-row{display:flex;align-items:center;gap:0.6rem;margin-top:0.9rem;padding-top:0.8rem;border-top:1px solid #f1f5f9;flex-wrap:wrap;font-size:0.8rem;}
+.rem-row label{color:#475569;font-weight:700;}
+.rem-row input[type="time"]{background:#fff;border:1px solid var(--border);color:#0f172a;padding:0.25rem 0.55rem;border-radius:8px;font-family:inherit;}
+.rem-row .switch{display:flex;align-items:center;gap:0.3rem;cursor:pointer;}
+.rem-row .switch input{accent-color:#2563eb;width:16px;height:16px;}
+
+/* ===== NOTES ===== */
+.notes-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;box-shadow:var(--shadow);margin-bottom:2rem;}
+.notes-card h3{font-weight:800;font-size:1.05rem;margin-bottom:0.8rem;color:#1d4ed8;display:flex;align-items:center;gap:0.5rem;}
+.notes-card .date-pick{margin-bottom:0.8rem;}
+.notes-card .date-pick input{border:1px solid var(--border);border-radius:8px;padding:0.45rem;background:#fff;font-family:inherit;color:var(--text);font-size:0.9rem;}
+.notes-card textarea{width:100%;min-height:110px;padding:0.8rem;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text);font-family:inherit;font-size:0.95rem;resize:vertical;}
+.note-actions{display:flex;gap:0.6rem;margin-top:0.8rem;}
+.note-actions button{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:0.55rem 1.1rem;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:.2s;}
+.note-actions button:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,0.25);}
+.note-actions .btn-sec{background:#fff;color:#475569;border:1px solid var(--border);}
+
+/* ===== REMINDERS SIDEBAR ===== */
+.reminders-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow);margin-bottom:1.5rem;}
+.reminders-sidebar h3{font-weight:800;font-size:1.05rem;margin-bottom:0.8rem;color:#1d4ed8;display:flex;align-items:center;gap:0.4rem;}
+.rem-list{display:flex;flex-direction:column;gap:0.7rem;}
+.rem-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.8rem;}
+.rem-item .rem-title{font-weight:700;color:#0f172a;font-size:0.95rem;}
+.rem-item .rem-meta{font-size:0.8rem;color:#64748b;margin-top:0.15rem;}
+.rem-item .rem-actions{display:flex;gap:0.4rem;margin-top:0.6rem;}
+.rem-item .rem-actions button{background:#fff;border:1px solid #e2e8f0;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;}
+.rem-item .rem-actions button:hover{border-color:#2563eb;color:#2563eb;}
+.rem-item.inactive{opacity:0.6;}
+
+/* ===== DATA TOOLS ===== */
+.data-tools{display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center;justify-content:center;padding-top:1.5rem;border-top:1px solid var(--border);margin-top:1rem;}
+.data-tools button, .data-tools label{background:#fff;border:1px solid var(--border);color:#334155;padding:0.65rem 1.1rem;border-radius:10px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:.2s;}
+.data-tools button:hover, .data-tools label:hover{border-color:#2563eb;color:#2563eb;}
+.data-tools input[type="file"]{display:none;}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:1rem;left:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;}
+.toast{background:#fff;color:#0f172a;padding:0.9rem 1.1rem;border-radius:12px;box-shadow:0 10px 30px rgba(11,18,32,0.15);font-weight:700;font-size:0.85rem;border-right:4px solid #2563eb;animation:slideIn .35s ease;pointer-events:auto;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(11,18,32,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal{background:#fff;border-radius:20px;padding:1.6rem;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(11,18,32,0.2);animation:fadeUp .3s ease;}
+.modal h3{font-weight:800;font-size:1.15rem;color:var(--primary-deep);margin-bottom:1rem;}
+.modal label{display:block;font-size:0.8rem;color:#475569;font-weight:700;margin-bottom:0.3rem;}
+.modal input, .modal select, .modal textarea{width:100%;padding:0.6rem 0.8rem;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:0.9rem;margin-bottom:0.8rem;transition:.2s;}
+.modal input:focus, .modal select:focus, .modal textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+.modal .btn-row{display:flex;gap:0.6rem;}
+.modal .btn-row button{flex:1;padding:0.7rem;border-radius:10px;border:none;font-weight:700;font-size:0.9rem;cursor:pointer;transition:.2s;}
+.modal .btn-row .btn-save{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;}
+.modal .btn-row .btn-cancel{background:#f1f5f9;color:#475569;}
+.modal .btn-row button:hover{transform:translateY(-1px);}
+
+/* ===== CHARTS ===== */
+.charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.2rem;margin-bottom:2rem;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow);}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .main-grid{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .container{padding:1rem 0.8rem;}
+  .app-header{flex-direction:column;align-items:flex-start;}
+  .quote-box{max-width:100%;}
+  .calendar-table{min-width:720px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH ===== -->
+<section id="authSection" class="auth-wrap">
+  <div class="auth-card">
+    <h1>Tracker</h1>
+    <p class="sub">ورود به سیستم مدیریت عادت‌ها با تقویم شمسی ۱۴۰۵</p>
+    <label for="userInput">نام کاربری</label>
+    <input id="userInput" type="text" placeholder="نام کاربری خود را وارد کنید" autocomplete="username" />
+    <label for="passInput">رمز عبور</label>
+    <input id="passInput" type="password" placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password" />
+    <div class="remember">
+      <input type="checkbox" id="rememberMe" />
+      <label for="rememberMe" style="margin:0;font-weight:600;">مرا به خاطر بسپار</label>
+    </div>
+    <button class="btn" onclick="doLogin()">ورود به سیستم</button>
+    <button class="btn-outline" onclick="showRegister()">ثبت نام کاربر جدید</button>
+    <div id="authMsg" class="msg"></div>
+    <div class="switch-text" id="switchText"></div>
+  </div>
+</section>
+
+<!-- ===== REGISTER FORM (hidden initially) ===== -->
+<section id="registerSection" class="auth-wrap hidden">
+  <div class="auth-card">
+    <h1>ثبت نام</h1>
+    <p class="sub">ایجاد حساب کاربری جدید</p>
+    <label for="regName">نام</label>
+    <input id="regName" type="text" placeholder="نام خود را وارد کنید" />
+    <label for="regUser">نام کاربری</label>
+    <input id="regUser" type="text" placeholder="نام کاربری" />
+    <label for="regPass">رمز عبور</label>
+    <input id="regPass" type="password" placeholder="رمز عبور" />
+    <label for="regPass2">تکرار رمز عبور</label>
+    <input id="regPass2" type="password" placeholder="تکرار رمز عبور" />
+    <button class="btn" onclick="doRegister()">ثبت نام</button>
+    <button class="btn-outline" onclick="hideRegister()">بازگشت به ورود</button>
+    <div id="regMsg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ===== MAIN APP ===== -->
+<section id="appSection" class="hidden container">
+
+  <header class="app-header">
+    <div class="brand">
+      <h1>Habit Tracker</h1>
+      <span>کاربر: <strong id="currentUserLabel" style="color:#1d4ed8">...</strong> | تقویم شمسی ۱۴۰۵</span>
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <div class="quote-box">
+        <span class="emoji">💡</span>
+        <span id="quoteText">در حال بارگذاری انگیزه...</span>
+      </div>
+      <div class="nav-row">
+        <button onclick="changeMonth(-1)" aria-label="قبل">◀</button>
+        <select id="monthSelect" onchange="jumpMonth()"></select>
+        <button onclick="changeMonth(1)" aria-label="بعد">▶</button>
+        <span id="currentMonthLabel">...</span>
+      </div>
+    </div>
+
+    <div class="user-actions">
+      <button class="save-btn" onclick="manualSave()" aria-label="ذخیره">💾 ذخیره اطلاعات</button>
+      <button class="logout-btn" onclick="doLogout()">🚪 خروج</button>
+    </div>
+  </header>
+
+  <!-- Reminder Banner -->
+  <div id="reminderBanner" class="reminder-banner hidden">
+    <div class="rem-banner-left">
+      <h4>⚠️ یادآوری امروز</h4>
+      <p>موارد ثبت‌نشده برای امروز:</p>
+      <div class="tags" id="missingTags"></div>
+    </div>
+    <div class="rem-banner-right">
+      <button class="btn" onclick="sendNotification()">🔔 ارسال نوتیف</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <section class="stats-grid" id="statsGrid"></section>
+
+  <!-- Main Content -->
+  <div class="main-grid">
+    <main>
+      <section class="table-wrap">
+        <table class="calendar-table" id="calendarTable">
+          <thead id="calendarHead"></thead>
+          <tbody id="calendarBody"></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="cards-heading">📊 پیشرفت هر عادت • پیام انگیزشی تصادفی</h2>
+        <section class="feedback-grid" id="feedbackGrid"></section>
+      </section>
+    </main>
+
+    <aside>
+      <!-- Notes -->
+      <section class="notes-card">
+        <h3>📝 یادداشت روزانه</h3>
+        <div class="date-pick">
+          <label>انتخاب تاریخ: <input id="noteDate" type="date" onchange="loadNote()" /></label>
+        </div>
+        <textarea id="noteText" placeholder="یادداشت خود را برای این روز بنویسید..." oninput="autoSaveNote()"></textarea>
+        <div class="note-actions">
+          <button onclick="saveNoteNow()">💾 ذخیره یادداشت</button>
+          <button onclick="loadNote()" class="btn-sec">🔄 بارگذاری</button>
+        </div>
+      </section>
+
+      <!-- Reminders -->
+      <section class="reminders-sidebar">
+        <h3>⏰ یادآوری‌های من</h3>
+        <button class="btn" onclick="openReminderModal()" style="width:100%;margin-bottom:1rem;background:linear-gradient(135deg,#f59e0b,#f97316);">➕ افزودن یادآوری</button>
+        <div class="rem-list" id="remList"></div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Add Habit -->
+  <section class="toolbar">
+    <label>نام عادت <input id="habitName" type="text" placeholder="مثلاً مطالعه ۳۰ دقیقه" /></label>
+    <label>رنگ <select id="habitColor">
+      <option value="#2563eb" selected>آبی</option>
+      <option value="#10b981">سبز</option>
+      <option value="#f472b6">صورتی</option>
+      <option value="#f59e0b">نارنجی</option>
+      <option value="#8b5cf6">بنفش</option>
+      <option value="#64748b">خاکستری</option>
+    </select></label>
+    <label>توضیحات <input id="habitDesc" type="text" placeholder="هدف این عادت" /></label>
+    <button class="btn" onclick="addHabit()" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">➕ افزودن عادت</button>
+  </section>
+
+  <!-- Data Tools -->
+  <section class="data-tools">
+    <button onclick="manualSave()">💾 ذخیره دستی حساب</button>
+    <button onclick="exportData()">📤 خروجی / بکاپ</button>
+    <label>📥 وارد کردن داده <input type="file" accept="application/json" onchange="importData(this.files[0])" /></label>
+  </section>
+
+</section>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Reminder Modal -->
+<div id="reminderModal" class="modal-overlay hidden" onclick="if(event.target===this)closeReminderModal()">
+  <div class="modal">
+    <h3>افزودن یادآوری</h3>
+    <label>عنوان یادآوری</label>
+    <input id="remTitle" type="text" placeholder="مثلاً مطالعه پایتون" />
+    <label>تاریخ (شمسی)</label>
+    <input id="remDate" type="text" placeholder="مثلاً ۲۰ مهر ۱۴۰۵" />
+    <label>ساعت</label>
+    <input id="remTime" type="time" />
+    <div class="btn-row">
+      <button class="btn-save" onclick="addReminder()">ذخیره</button>
+      <button class="btn-cancel" onclick="closeReminderModal()">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Habit Detail Modal (optional for edit) -->
+<div id="habitModal" class="modal-overlay hidden" onclick="if(event.target===this)closeHabitModal()">
+  <div class="modal">
+    <h3>افزودن عادت جدید</h3>
+    <label>نام عادت</label>
+    <input id="modHabitName" type="text" placeholder="نام عادت" />
+    <label>توضیحات</label>
+    <input id="modHabitDesc" type="text" placeholder="توضیحات کوتاه" />
+    <label>رنگ</label>
+    <select id="modHabitColor">
+      <option value="#2563eb">آبی</option>
+      <option value="#10b981">سبز</option>
+      <option value="#f472b6">صورتی</option>
+      <option value="#f59e0b">نارنجی</option>
+      <option value="#8b5cf6">بنفش</option>
+      <option value="#64748b">خاکستری</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn-save" onclick="confirmAddHabit()">افزودن</button>
+      <button class="btn-cancel" onclick="closeHabitModal()">بستن</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================== SHAMSI CALENDAR DATA ================== */
+const SHAMSI = {
+  months: [
+    {name:"فروردین",days:31},{name:"اردیبهشت",days:31},{name:"خرداد",days:31},
+    {name:"تیر",days:31},{name:"مرداد",days:31},{name:"شهریور",days:31},
+    {name:"مهر",days:30},{name:"آبان",days:30},{name:"آذر",days:30},
+    {name:"دی",days:30},{name:"بهمن",days:30},{name:"اسفند",days:29}
+  ],
+  weekdays: ["شنبه","یک‌شنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنج‌شنبه","جمعه"]
+};
+/* Reference: Farvardin 1 = Shanbe (index 0) */
+function getStartWD(mIndex){
+  let total=0;
+  for(let i=0;i<mIndex;i++) total+=SHAMSI.months[i].days;
+  return (0+total)%7; // 0=Shanbe
+}
+function getWDName(mIndex, d){
+  const s = getStartWD(mIndex);
+  const idx = (s + d - 1) % 7;
+  return SHAMSI.weekdays[idx];
+}
+function fmtMonth(y,m){ return SHAMSI.months[m].name + " " + y; }
+function daysInMonth(y,m){ return SHAMSI.months[m].days; }
+
+/* ================== QUOTES & FEEDBACK ================== */
+const QUOTES = [
+  "موفقیت مجموع تلاش‌های کوچک روزانه است.",
+  "پایداری کلید رسیدن به هر هدفی است.",
+  "هر قدم، حتی کوچک، شما را به جلو می‌برد.",
+  "امروز آنچه فردا نیاز داری، بساز.",
+  "عادت‌های خوب، سرمایه‌ی آینده‌ی شما هستند.",
+  "استمرار، برنده‌ی نهایی است."
+];
+const FEEDBACKS = {
+  high: ["عالی! استمرار شما تحسین‌برانگیز است 🌟","شما در مسیر قهرمانی هستید 💪","پیشرفت خیره‌کننده! ادامه دهید"],
+  mid: ["خوب پیش می‌روید؛ کمی بیشتر تلاش کنید ✨","راه درست است، سرعت را حفظ کنید 🚀"],
+  low: ["امروز روز جدیدی برای شروع است 🌱","هر قدم کوچک، یک پیروزی بزرگ است 🏅"]
+};
+
+/* ================== DATA MODEL ================== */
+let state = {
+  users: {},
+  currentUser: null,
+  data: {
+    habits: [],
+    view: {year:1405, month:0},
+    notes: {},
+    remindersNotified: {},
+    reminders: []
+  }
+};
+
+/* ================== STORAGE ================== */
+function loadStorage(){
+  try{
+    const raw = localStorage.getItem('shamsi_tracker_complete_v1');
+    if(raw){
+      const p = JSON.parse(raw);
+      state.users = p.users || {};
+      state.currentUser = p.currentUser || null;
+    }
+  }catch(e){ console.error("Storage load error", e); }
+}
+function saveStorage(){
+  localStorage.setItem('shamsi_tracker_complete_v1', JSON.stringify({users:state.users, currentUser:state.currentUser}));
+}
+function loadUserData(){
+  if(state.currentUser && state.users[state.currentUser] && state.users[state.currentUser].data){
+    state.data = state.users[state.currentUser].data;
+  } else {
+    state.data = {habits:[], view:{year:1405, month:0}, notes:{}, remindersNotified:{}, reminders:[]};
+  }
+}
+function saveUserData(){
+  if(state.currentUser){
+    if(!state.users[state.currentUser]) state.users[state.currentUser] = {pass:"", data:{}};
+    state.users[state.currentUser].data = state.data;
+    saveStorage();
+  }
+}
+
+/* ================== AUTH ================== */
+function showRegister(){
+  document.getElementById('authSection').classList.add('hidden');
+  document.getElementById('registerSection').classList.remove('hidden');
+  document.getElementById('authMsg').textContent = "";
+}
+function hideRegister(){
+  document.getElementById('registerSection').classList.add('hidden');
+  document.getElementById('authSection').classList.remove('hidden');
+  document.getElementById('regMsg').textContent = "";
+}
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const u = document.getElementById('regUser').value.trim();
+  const p = document.getElementById('regPass').value;
+  const p2 = document.getElementById('regPass2').value;
+  const msg = document.getElementById('regMsg');
+  if(!name || !u || !p){ msg.textContent = "لطفاً تمام فیلدها را پر کنید."; msg.className = "msg err"; return; }
+  if(state.users[u]){ msg.textContent = "این نام کاربری قبلاً ثبت شده است."; msg.className = "msg err"; return; }
+  if(p !== p2){ msg.textContent = "رمز عبور و تکرار آن یکسان نیستند."; msg.className = "msg err"; return; }
+  state.users[u] = {pass:p, data:{habits:[], view:{year:1405,month:0}, notes:{}, remindersNotified:{}, reminders:[]}};
+  state.currentUser = u; saveStorage(); loadUserData();
+  msg.textContent = "ثبت نام موفق بود ✅"; msg.className = "msg ok";
+  setTimeout(()=>{
+    document.getElementById('registerSection').classList.add('hidden');
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('authSection').classList.add('hidden');
+    document.getElementById('appSection').classList.remove('hidden');
+    initApp();
+  }, 900);
+}
+function doLogin(){
+  const u = document.getElementById('userInput').value.trim();
+  const p = document.getElementById('passInput').value;
+  const msg = document.getElementById('authMsg');
+  if(!state.users[u] || state.users[u].pass !== p){ msg.textContent = "نام کاربری یا رمز اشتباه است."; msg.className = "msg err"; return; }
+  state.currentUser = u; saveStorage(); loadUserData();
+  const rem = document.getElementById('rememberMe').checked;
+  if(rem) localStorage.setItem('tracker_remember_user', u);
+  msg.textContent = `خوش آمدید ${u} ✅`; msg.className = "msg ok";
+  setTimeout(()=>{
+    document.getElementById('authSection').classList.add('hidden');
+    document.getElementById('appSection').classList.remove('hidden');
+    initApp();
+  }, 600);
+}
+function doLogout(){
+  state.currentUser = null;
+  saveStorage();
+  document.getElementById('appSection').classList.add('hidden');
+  document.getElementById('authSection').classList.remove('hidden');
+  document.getElementById('authMsg').textContent = "خروج موفق بود.";
+  document.getElementById('userInput').value = ""; document.getElementById('passInput').value = "";
+}
+
+/* ================== INIT APP ================== */
+function initApp(){
+  document.getElementById('currentUserLabel').textContent = state.currentUser;
+  const remUser = localStorage.getItem('tracker_remember_user');
+  if(remUser) document.getElementById('userInput').value = remUser;
+  document.getElementById('quoteText').textContent = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
+  buildMonthSelect(); renderAll();
+  checkReminders(); setInterval(checkReminders, 30000);
+  if(Notification.permission === 'default') Notification.requestPermission();
+}
+
+/* ================== HABITS ================== */
+function addHabit(){
+  const name = document.getElementById('habitName').value.trim();
+  const desc = document.getElementById('habitDesc').value.trim();
+  const color = document.getElementById('habitColor').value;
+  if(!name){ showToast("نام عادت را وارد کنید"); return; }
+  state.data.habits.push({id:Date.now(), name, color, desc:desc||"بدون توضیحات", logs:{}, reminderEnabled:false, reminderTime:"08:00"});
+  document.getElementById('habitName').value=""; document.getElementById('habitDesc').value="";
+  saveUserData(); renderAll(); showToast(`عادت "${name}" اضافه شد ✅`);
+}
+function deleteHabit(id){
+  if(!confirm("آیا از حذف این عادت مطمئن هستید؟")) return;
+  state.data.habits = state.data.habits.filter(h=>h.id!==id);
+  saveUserData(); renderAll();
+}
+function toggleLog(id, key, checked){
+  const h = state.data.habits.find(x=>x.id===id);
+  if(!h) return;
+  if(checked) h.logs[key]=true; else delete h.logs[key];
+  saveUserData(); renderAll();
+}
+
+/* ================== NAV ================== */
+function changeMonth(delta){
+  state.data.view.month += delta;
+  if(state.data.view.month>11){ state.data.view.month=0; state.data.view.year++;}
+  if(state.data.view.month<0){ state.data.view.month=11; state.data.view.year--;}
+  saveUserData(); buildMonthSelect(); renderAll();
+}
+function jumpMonth(){
+  const v = document.getElementById('monthSelect').value;
+  const [y,m] = v.split('-').map(Number);
+  state.data.view.year = y; state.data.view.month = m-1;
+  saveUserData(); buildMonthSelect(); renderAll();
+}
+function buildMonthSelect(){
+  const y = state.data.view.year, m = state.data.view.month;
+  const cur = `${y}-${String(m+1).padStart(2,'0')}`;
+  let html = "";
+  for(let yy=y-2; yy<=y+2; yy++){
+    for(let mm=0; mm<12; mm++){
+      const val = `${yy}-${String(mm+1).padStart(2,'0')}`;
+      html += `<option value="${val}" ${val===cur?'selected':''}>${fmtMonth(yy,mm)}</option>`;
+    }
+  }
+  document.getElementById('monthSelect').innerHTML = html;
+}
+
+/* ================== CALENDAR RENDER ================== */
+function renderCalendarTable(){
+  const m = state.data.view.month;
+  const y = state.data.view.year;
+  const days = SHAMSI.months[m].days;
+  const startWD = getStartWD(m);
+
+  let head = `<thead><tr><th>عادت</th>`;
+  for(let d=1; d<=days; d++){
+    const wdName = getWDName(m,d);
+    head += `<th><div>${d}</div><span class="sub-wd">${wdName.substring(0,3)}</span></th>`;
+  }
+  head += `<th>درصد</th></tr></thead>`;
+
+  let body = `<tbody>`;
+  if(!state.data.habits.length){
+    body += `<tr><td colspan="${days+2}" style="padding:2rem;color:#94a3b8;">هنوز عادتی ثبت نشده است. از دکمه‌ی افزودن استفاده کنید.</td></tr>`;
+  } else {
+    state.data.habits.forEach(h=>{
+      let done=0; let cells="";
+      for(let d=1; d<=days; d++){
+        const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const checked = !!h.logs[key];
+        if(checked) done++;
+        cells += `<td class="${checked?'checked-cell':''}">
+          <label class="chk-wrap" title="${h.name} - روز ${d}">
+            <span class="d-num">${d}</span>
+            <input type="checkbox" ${checked?'checked':''} onchange="toggleLog(${h.id},'${key}',this.checked)" />
+          </label>
+        </td>`;
+      }
+      const pct = days?Math.round(done/days*100):0;
+      body += `<tr>
+        <td class="habit-cell">
+          <button class="delete-habit-btn" onclick="deleteHabit(${h.id})" aria-label="حذف" title="حذف">×</button>
+          <span class="color-dot" style="--dot:${h.color}"></span>
+          <span>${h.name}</span>
+        </td>
+        ${cells}
+        <td class="pct-cell">${pct}%</td>
+      </tr>`;
+    });
+  }
+  body += `</tbody>`;
+  document.getElementById('calendarHead').innerHTML = head;
+  document.getElementById('calendarBody').innerHTML = body;
+}
+
+/* ================== STATS ================== */
+function renderStats(){
+  const dCount = SHAMSI.months[state.data.view.month].days;
+  let done=0, total=state.data.habits.length*dCount;
+  state.data.habits.forEach(h=>{
+    for(let d=1; d<=dCount; d++){
+      const key = `${state.data.view.year}-${String(state.data.view.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(h.logs[key]) done++;
+    }
+  });
+  const pct = total?Math.round(done/total*100):0;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="icon">📊</div><div><h3>${pct}%</h3><p>پیشرفت کلی ماه</p></div></div>
+    <div class="stat-card"><div class="icon">✅</div><div><h3>${done}</h3><p>تعداد تیک‌ها</p></div></div>
+    <div class="stat-card"><div class="icon">📅</div><div><h3>${dCount}</h3><p>روزهای ماه</p></div></div>
+    <div class="stat-card"><div class="icon">⏰</div><div><h3>${state.data.habits.filter(h=>h.reminderEnabled).length}</h3><p>یادآور فعال</p></div></div>
+  `;
+}
+
+/* ================== PROGRESS CARDS ================== */
+function renderCards(){
+  const dCount = SHAMSI.months[state.data.view.month].days;
+  const container = document.getElementById('feedbackGrid');
+  if(!state.data.habits.length){ container.innerHTML='<p style="grid-column:1/-1;color:#94a3b8;">هنوز عادتی اضافه نشده است.</p>'; return; }
+  let html="";
+  state.data.habits.forEach(h=>{
+    let done=0;
+    for(let d=1; d<=dCount; d++){
+      const key = `${state.data.view.year}-${String(state.data.view.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(h.logs[key]) done++;
+    }
+    const pct = dCount?Math.round(done/dCount*100):0;
+    let pool=FEEDBACKS.low, cls="negative";
+    if(pct>=80){pool=FEEDBACKS.high;cls="positive";}
+    else if(pct>=40){pool=FEEDBACKS.mid;cls="neutral";}
+    const msg = pool[Math.floor(Math.random()*pool.length)];
+
+    const today = new Date();
+    const todayKeyReal = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+    const isTodayInView = (today.getFullYear()===state.data.view.year && (today.getMonth()+1)===state.data.view.month+1);
+    const missingToday = isTodayInView && !h.logs[todayKeyReal];
+
+    html+=`
+      <div class="card ${missingToday?'alert-card':''}" style="--c:${h.color}">
+        <h3 style="color:${h.color}">${h.name}</h3>
+        <div class="meta">${done} از ${dCount} روز (${pct}%)</div>
+        <p class="desc">${h.desc}</p>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="60" class="bg"/>
+            <circle cx="70" cy="70" r="60" class="fill" style="stroke:${h.color}; stroke-dashoffset:${377-(377*pct/100)}"/>
+          </svg>
+          <div class="donut-center" style="color:${h.color}">${pct}%<span>تکمیل</span></div>
+        </div>
+        <div class="feedback-box ${cls}">
+          <span class="motivation-icon">💡</span>
+          ${msg}
+        </div>
+        <div class="rem-row">
+          <label>⏰ یادآور</label>
+          <input type="time" value="${h.reminderTime}" onchange="updateReminder(${h.id},this.value,document.getElementById('chk-${h.id}').checked)">
+          <label class="switch">
+            <input type="checkbox" id="chk-${h.id}" ${h.reminderEnabled?'checked':''} onchange="updateReminder(${h.id},'${h.reminderTime}',this.checked)">
+            فعال
+          </label>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+/* ================== RENDER ALL ================== */
+function renderAll(){
+  document.getElementById('currentMonthLabel').textContent = fmtMonth(state.data.view.year, state.data.view.month);
+  renderHeaderInfo();
+  renderStats();
+  renderCalendarTable();
+  renderCards();
+  renderReminderBanner();
+  renderRemindersList();
+}
+function renderHeaderInfo(){
+  document.getElementById('currentUserLabel').textContent = state.currentUser;
+}
+
+/* ================== NOTES ================== */
+function loadNote(){
+  const val = document.getElementById('noteDate').value;
+  if(!val) return;
+  document.getElementById('noteText').value = state.data.notes[val] || "";
+}
+function saveNoteNow(){
+  const val = document.getElementById('noteDate').value.trim();
+  if(!val){ showToast("تاریخ را وارد کنید"); return; }
+  const text = document.getElementById('noteText').value.trim();
+  state.data.notes[val] = text;
+  saveUserData(); showToast("💾 یادداشت ذخیره شد.");
+}
+let noteTimer = null;
+function autoSaveNote(){ clearTimeout(noteTimer); noteTimer = setTimeout(saveNoteNow, 1200); }
+
+/* ================== REMINDERS ================== */
+function openReminderModal(){ document.getElementById('reminderModal').classList.remove('hidden'); }
+function closeReminderModal(){ document.getElementById('reminderModal').classList.add('hidden'); }
+function addReminder(){
+  const title = document.getElementById('remTitle').value.trim();
+  const dateStr = document.getElementById('remDate').value.trim();
+  const timeStr = document.getElementById('remTime').value;
+  if(!title || !dateStr || !timeStr){ showToast("تمام فیلدها را پر کنید"); return; }
+  state.data.reminders.push({id: Date.now(), title, dateStr, timeStr, active: true});
+  saveUserData(); renderRemindersList(); closeReminderModal(); showToast("⏰ یادآوری ثبت شد");
+}
+function deleteReminder(id){
+  state.data.reminders = state.data.reminders.filter(r=>r.id!==id);
+  saveUserData(); renderRemindersList();
+}
+function toggleReminderActive(id){
+  const r = state.data.reminders.find(x=>x.id===id);
+  if(r){ r.active = !r.active; saveUserData(); renderRemindersList(); }
+}
+function renderRemindersList(){
+  const container = document.getElementById('remList');
+  if(!state.data.reminders.length){ container.innerHTML='<p style="color:#94a3b8;font-size:0.85rem;">یادآوری ثبت نشده است.</p>'; return; }
+  let html="";
+  state.data.reminders.forEach(r=>{
+    html+=`
+      <div class="rem-item ${!r.active?'inactive':''}">
+        <div class="rem-title">${r.title}</div>
+        <div class="rem-meta">${r.dateStr} — ${r.timeStr}</div>
+        <div class="rem-actions">
+          <button onclick="toggleReminderActive(${r.id})">${r.active?'غیرفعال':'فعال'}</button>
+          <button onclick="deleteReminder(${r.id})">حذف</button>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+function renderReminderBanner(){
+  const t = new Date();
+  const hk = `${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}`;
+  const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  const missing = [];
+  state.data.habits.forEach(h=>{
+    if(h.reminderEnabled && !h.logs[todayStr]) missing.push(h.name);
+  });
+  const banner = document.getElementById('reminderBanner');
+  const tags = document.getElementById('missingTags');
+  if(missing.length){
+    banner.classList.remove('hidden'); tags.innerHTML = missing.map(n=>`<span class="tag">${n}</span>`).join('');
+  } else banner.classList.add('hidden');
+}
+
+/* ================== NOTIFICATION ================== */
+function checkReminders(){
+  const now = new Date();
+  const hk = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  state.data.reminders.forEach(r=>{
+    if(!r.active) return;
+    if(r.timeStr === hk){
+      const lastKey = `rem_notif_${r.id}_${hk}`;
+      if(!state.data.remindersNotified[lastKey]){
+        state.data.remindersNotified[lastKey] = true;
+        saveUserData();
+        sendNotify("⏰ یادآوری", r.title);
+        showToast(`🔔 ${r.title}`);
+      }
+    }
+  });
+}
+function sendNotification(){
+  if(Notification.permission==='granted'){
+    new Notification("🔔 یادآوری Tracker","زمان انجام کارهای شما فرا رسیده است.",{tag:'habit_reminder'});
+  } else if(Notification.permission!=='denied'){
+    Notification.requestPermission().then(p=>{ if(p==='granted') sendNotification(); });
+  }
+}
+function sendNotify(title, body){
+  if(Notification.permission==='granted'){
+    new Notification(title, {body, tag:'habit_reminder'});
+  }
+}
+
+/* ================== DATA SAVE / EXPORT ================== */
+function manualSave(){
+  saveUserData();
+  showToast("✅ اطلاعات با موفقیت ذخیره شد.");
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify({user:state.currentUser, data:state.data})], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `tracker-backup-${state.currentUser}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast("📤 فایل بکاپ دانلود شد.");
+}
+function importData(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(parsed.data && parsed.user){
+        if(state.currentUser && state.users[state.currentUser]){
+          state.users[state.currentUser].data = parsed.data;
+          state.data = parsed.data;
+        } else {
+          state.currentUser = parsed.user;
+          state.users[parsed.user] = {pass:"", data:parsed.data};
+          state.data = parsed.data;
+        }
+        saveStorage(); renderAll(); showToast("📥 داده‌ها وارد شدند.");
+      } else showToast("❌ فرمت فایل نامعتبر.");
+    }catch(err){ showToast("❌ خطا در خواندن فایل."); }
+  };
+  reader.readAsText(file);
+}
+
+/* ================== TOAST ================== */
+function showToast(msg){
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+/* ================== BOOT ================== */
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadStorage();
+  if(state.currentUser && state.users[state.currentUser]){
+    loadUserData();
+    document.getElementById('authSection').classList.add('hidden');
+    document.getElementById('appSection').classList.remove('hidden');
+    initApp();
+  } else {
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('appSection').classList.add('hidden');
+  }
+});
+</script>
+</body>
+</html>
